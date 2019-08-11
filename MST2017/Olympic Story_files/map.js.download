@@ -1,0 +1,451 @@
+(function($){
+
+	// basic animation duration
+	var duration = 450,
+	    mapCounter = 0;
+
+	// styles for svg object
+	var styles = {
+		lines: {
+			gold: { 'stroke': '#ffcc00', 'stroke-linecap': 'round' },
+			silver: { 'stroke': '#c1c1c1', 'stroke-linecap': 'round' },
+			bronze: { 'stroke': '#ca8256', 'stroke-linecap': 'round' },
+			all: { 'stroke': '#2876d6', 'stroke-linecap': 'round' },
+			title: { 'stroke': '#FFF', 'stroke-width': 1 }
+		},
+		circle: { 'fill': '#FFF', 'stroke-width': 0 }
+	};
+
+	// map styles
+	var mapStyles = {};
+	mapStyles.bordered = [{
+		elementType: "labels",
+		stylers: [{ "visibility": "on" }]
+	}, {
+		elementType: "geometry",
+		stylers: [{ "visibility": "on" }]
+	}];
+	mapStyles.simple = [{
+		featureType: "all",
+		stylers: [{ "visibility": "off" }]
+	}];
+
+	// {fn} get curve path
+	var curve = function(x1,y1,x2,y2, offset){
+		var point = getPoint(x1,y1,x2,y2,offset);
+		var string = 'M ' + x1 + ' ' + y1 +' S ' + point.x + ' ' + point.y + ', ' + x2+ ' ' + y2;
+		return string;
+	};
+
+	// {fn} get point for curve line
+	var getPoint = function(fromX,fromY,toX,toY,a){
+		var x2 = (fromX + toX) / 2,
+		    y2 = (fromY + toY) / 2,
+		    b = Math.sqrt(Math.pow(fromX - toX, 2) + Math.pow(fromY - toY, 2)) / 2,
+		    c = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+		return {
+			x: (1/2)*((fromY-y2)*Math.sqrt(-(-Math.pow(fromX,2)+2*x2*fromX-Math.pow(x2,2)+(-c+a-fromY+y2)*(-c+a+fromY-y2))*(-Math.pow(fromX,2)+2*x2*fromX-Math.pow(x2,2)+(c+a-fromY+y2)*(c+a+fromY-y2))*Math.pow(fromX-x2,2))+(Math.pow(fromX,3)-Math.pow(fromX,2)*x2+(Math.pow(y2,2)-2*fromY*y2-Math.pow(c,2)+Math.pow(fromY,2)+Math.pow(a,2)-Math.pow(x2,2))*fromX-x2*(Math.pow(a,2)-Math.pow(c,2)-Math.pow(x2,2)-Math.pow(y2,2)+2*fromY*y2-Math.pow(fromY,2)))*(fromX-x2))/((fromX-x2)*(Math.pow(fromX,2)-2*x2*fromX+Math.pow(x2,2)+Math.pow(fromY-y2,2))),
+			y: (-Math.sqrt(-(-Math.pow(fromX,2)+2*x2*fromX-Math.pow(x2,2)+(-c+a-fromY+y2)*(-c+a+fromY-y2))*(-Math.pow(fromX,2)+2*x2*fromX-Math.pow(x2,2)+(c+a-fromY+y2)*(c+a+fromY-y2))*Math.pow(fromX-x2,2))+Math.pow(fromY,3)-Math.pow(fromY,2)*y2+(Math.pow(a,2)+Math.pow(fromX,2)-Math.pow(c,2)+Math.pow(x2,2)-2*x2*fromX-Math.pow(y2,2))*fromY+Math.pow(y2,3)+(Math.pow(x2,2)-2*x2*fromX+Math.pow(c,2)-Math.pow(a,2)+Math.pow(fromX,2))*y2)/(2*Math.pow(fromY,2)-4*fromY*y2+2*Math.pow(y2,2)+2*Math.pow(fromX-x2,2))
+		};
+	};
+
+	var getOpacity = function(number){
+		return Math.max(0.33, Math.min(1,number*0.3));
+	};
+
+	// jQuery plugin
+	$.fn.resultsMap = function(){
+
+		// each elements
+		this.each(function(){
+
+			// blocks
+			var $block = $(this),
+			    $content = $block.find('.js-map__content'),
+			    $games = $block.find('.js-map__game'),
+			    $items = $block.find('.js-map__item');
+
+			// variables
+			var dots = [],
+			    mapIndex = mapCounter,
+			    zoom = parseInt($content.attr('data-zoom'),10),
+			    mode = 'gold',
+			    mapCenter = { x:0, y:0 },
+			    isGlobal = ($games.length>1),
+			    dotCoords = [],
+			    dotDatas = [],
+			    map;
+
+			mapCounter++;
+
+			// calculate cart center
+			$games.each(function(){
+				mapCenter.x += parseFloat($(this).attr('data-x'),10);
+				mapCenter.y += parseFloat($(this).attr('data-y'),10);
+			});
+			mapCenter.x = mapCenter.x/$games.length+8;
+			mapCenter.y = mapCenter.y/$games.length+3;
+
+			// {fn} get map offset in pixels
+			var getOffset = function(coords){
+				var projection = map.getProjection();
+				var world = projection.fromLatLngToPoint(coords);
+				return {
+					x: Math.round(world.x * Math.pow(2, zoom)),
+					y: Math.round(world.y * Math.pow(2, zoom))
+				};
+			};
+
+			// extend google maps overlay view
+			Overlay.prototype = new google.maps.OverlayView();
+
+			// custom overlay constructor
+			function Overlay(bounds, map, typee, data) {
+				this.inited = false;
+				this.bounds = bounds;
+				this.div = null;
+				this.typee = typee;
+				this.medals = { gold:data.gold, silver:data.silver, bronze:data.bronze };
+				if (typee=='country'){
+					this.from = { x:data.x1, y:data.y1 };
+					this.to = { x:data.x2, y:data.y2 };
+					this.index = data.itemIndex;
+					this.gameIndex = data.gameIndex;
+					this.canvasID = 'map-' + mapIndex + '-country-' + data.gameIndex + '-' + data.itemIndex;
+					this.lines = {};
+				} else {
+					this.center = { x:data.x, y:data.y };
+					this.isHost = data.isHost || false;
+					this.title = data.title || false;
+					this.year = data.year || false;
+					this.canvasID = 'map-' + mapIndex + '-dot-' + dots.length;
+				};
+				this.setMap(map);
+				return this;
+			};
+
+			// {fn} add overlay
+			Overlay.prototype.onAdd = function(){
+				this.div = document.createElement('div');
+				this.div.style.position = 'absolute';
+				this.div.id = this.canvasID;
+				var panes = this.getPanes();
+				panes.overlayLayer.appendChild(this.div);
+			};
+
+			// {fn} create lines overlay
+			Overlay.prototype.createDot = function(projection, sw, ne){
+				// offsets of from and to points
+				var offset = getOffset(new google.maps.LatLng(this.center.y, this.center.x))
+				// container offsets
+				var container = {
+					sw: getOffset(this.bounds.getSouthWest()),
+					ne: getOffset(this.bounds.getNorthEast())
+				};
+				// centers of points in overlay
+				var center = {
+					x: offset.x-container.sw.x,
+					y: offset.y-container.ne.y
+				};
+				// create canvas
+				this.paper = Raphael(this.canvasID, this.div.style.width, this.div.style.height);
+				// create circles
+				if (this.isHost) {
+					this.paper.circle(center.x, center.y, 25).attr(styles.circle).attr({ opacity: 0.33 });
+					this.paper.circle(center.x, center.y, 15).attr(styles.circle);
+					if (this.title) {
+						var text = isGlobal ? this.year : this.title.toUpperCase() + '\n' + this.year;
+						if (!isGlobal || (isGlobal && zoom>4)) this.paper.text(center.x, isGlobal ? center.y+39 : center.y+52, text).attr({
+							'fill': '#FFF',
+							'font-family': 'Futura Demi',
+							'font-size': 16
+						});
+					}
+				} else {
+					if (mode=='all' || (mode=='gold'&&this.medals.gold) || (mode=='silver'&&this.medals.silver) || (mode=='bronze'&&this.medals.bronze)) this.paper.circle(center.x, center.y, 5).attr(styles.circle);
+				};
+			};
+
+			// {fn} create lines overlay
+			Overlay.prototype.createLines = function(projection, sw, ne){
+				// offsets of from and to points
+				var offset = {
+					from: getOffset(new google.maps.LatLng(this.from.y, this.from.x)),
+					to: getOffset(new google.maps.LatLng(this.to.y, this.to.x))
+				};
+				// container offsets
+				var container = {
+					sw: getOffset(this.bounds.getSouthWest()),
+					ne: getOffset(this.bounds.getNorthEast())
+				};
+				// centers of points in overlay
+				var center = {
+					from: {
+						x: offset.from.x-container.sw.x,
+						y: offset.from.y-container.ne.y
+					},
+					to: {
+						x: offset.to.x-container.sw.x,
+						y: offset.to.y-container.ne.y
+					}
+				};
+				// create canvas
+				this.paper = Raphael(this.canvasID, this.div.style.width, this.div.style.height);
+				// distance
+				var distance = Math.sqrt( Math.pow(center.to.x-center.from.x,2) + Math.pow(center.to.y-center.from.y,2) ),
+				    linePath = curve(center.from.x, center.from.y, center.to.x, center.to.y, distance/4);
+				// all line
+				if (mode=='all' && this.medals.gold+this.medals.silver+this.medals.bronze>0) {
+					this.lines.all = this.paper
+						.path(linePath)
+						.attr(styles.lines.all)
+						.attr({ 'stroke-width': Math.max(1,this.medals.gold/3 + this.medals.silver/3 + this.medals.bronze/3) });
+					if (isGlobal) {
+						this.lines.all.attr({ 'opacity': getOpacity(this.medals.gold+this.medals.silver+this.medals.bronze) });
+					} else {
+						showPath(this.lines.all.attr({ 'opacity':0 }), this.medals.gold+this.medals.silver+this.medals.bronze, this.index*duration/3 + this.gameIndex*8*duration);
+					}
+				}
+				// bronze line
+				if (mode=='bronze' && this.medals.bronze) {
+					this.lines.bronze = this.paper
+						.path(linePath)
+						.attr(styles.lines.bronze)
+						.attr({ 'stroke-width': Math.max(1,this.medals.bronze/3) })
+					if (isGlobal) {
+						this.lines.bronze.attr({ 'opacity': getOpacity(this.medals.bronze) });
+					} else {
+						showPath(this.lines.bronze.attr({ 'opacity':0 }), this.medals.bronze, duration + this.index*duration/3 + this.gameIndex*8*duration);
+					};
+				}
+				// silver line
+				if (mode=='silver' && this.medals.silver) {
+					this.lines.silver = this.paper
+						.path(linePath)
+						.attr(styles.lines.silver)
+						.attr({ 'stroke-width': Math.max(1,this.medals.silver/3) })
+					if (isGlobal) {
+						this.lines.silver.attr({ 'opacity': getOpacity(this.medals.silver) });
+					} else {
+						showPath(this.lines.silver.attr({ 'opacity':0 }), this.medals.silver, duration*2 + this.index*duration/3 + this.gameIndex*8*duration);
+					}
+				}
+				// gold line
+				if (mode=='gold' && this.medals.gold) {
+					this.lines.gold = this.paper
+						.path(linePath)
+						.attr(styles.lines.gold)
+						.attr({ 'stroke-width': Math.max(1,this.medals.gold/3) })
+					if (isGlobal) {
+						this.lines.gold.attr({ 'opacity': getOpacity(this.medals.gold) });
+					} else {
+						showPath(this.lines.gold.attr({ 'opacity':0 }), this.medals.gold, duration*3 + this.index*duration/3 + this.gameIndex*8*duration);
+					}
+				}
+				return this;
+			};
+
+			// {fn} show path
+			var showPath = function(line, count, delay){
+				var length = line.getTotalLength(),
+				    part = line.clone(),
+				    state = 0;
+				// Setup your animation
+				$('<div />').delay(delay).animate({ 'to': 1 }, {
+					duration: duration*8,
+					easing: 'easeOutSine',
+					start: function(){
+						part.attr({ 'opacity': getOpacity(count) });
+					},
+					step: function(pos,fx) {
+						if (fx.pos>=state){
+							var subpath = line.getSubpath(0, length*pos);
+							part.attr({ path: subpath });
+							state += 0.01;
+						}
+					},
+					done: function(){
+						part.attr({ path: line.attr('path') });
+						$(this).remove();
+					}
+				});
+			};
+
+			// {fn} draw overlay
+			Overlay.prototype.draw = function(update){
+				var projection = this.getProjection();
+				var sw = projection.fromLatLngToDivPixel(this.bounds.getSouthWest()),
+				    ne = projection.fromLatLngToDivPixel(this.bounds.getNorthEast());
+				var sw2 = getOffset(this.bounds.getSouthWest()),
+				    ne2 = getOffset(this.bounds.getNorthEast());
+				// set css size and offset
+				this.div.style.left = sw.x+'px';
+				this.div.style.top = ne.y+'px';
+				this.div.style.width = Math.abs(ne2.x-sw2.x)+'px';
+				this.div.style.height = Math.abs(sw2.y-ne2.y)+'px';
+				// update
+				if (!this.inited || update===true) {
+					$(this.div).animate({ opacity: 1 }, 450);
+					// inited flag
+					this.inited = true;
+					// clear paper if needed
+					if (this.paper) this.paper.remove();
+					// create canvas
+					if (this.typee=='country') this.createLines(projection,sw,ne); else this.createDot(projection,sw,ne);
+				};
+			};
+
+			// {fn} remove overlay
+			Overlay.prototype.onRemove = function(){
+				this.div.parentNode.removeChild(this.div);
+				this.div = null;
+			};
+
+			// {fn} create google map
+			var createMap = function(){
+				map = new google.maps.Map($content[0], {
+					center: new google.maps.LatLng(mapCenter.y,mapCenter.x),
+					zoom: zoom,
+					scrollwheel: false,
+					disableDefaultUI: true,
+					zoomControl: true,
+					zoomControlOptions: {
+						style: google.maps.ZoomControlStyle.LARGE,
+						position: google.maps.ControlPosition.RIGHT_CENTER
+					},
+					mapTypeId: 'hybrid',
+					maxZoom: 7,
+					minZoom: 3,
+					backgroundColor: '#000000',
+					styles: mapStyles.bordered
+				});
+			};
+
+			// {fn} create country
+			var createCountry = function(itemIndex, gameIndex, x1,y1,x2,y2, gold,silver,bronze, title){
+				return new Overlay(new google.maps.LatLngBounds(
+					new google.maps.LatLng(Math.min(y1,y2)-20, Math.min(x1,x2)-5),
+					new google.maps.LatLng(Math.max(y1,y2)+20, Math.max(x1,x2)+5)
+				), map, 'country', { itemIndex:itemIndex, gameIndex:gameIndex, x1:x1, y1:y1, x2:x2, y2:y2, gold:gold, silver:silver, bronze:bronze });
+			};
+
+			// {fn} create country
+			var createDot = function(x,y, isHost, gold,silver,bronze, title, year){
+				dots.push(new Overlay(new google.maps.LatLngBounds(
+					new google.maps.LatLng(y-12, x-18),
+					new google.maps.LatLng(y+12, x+18)
+				), map, 'dot', { x:x, y:y, isHost:isHost, gold:gold, silver:silver, bronze:bronze, title:title, year:year }));
+			};
+
+			// {fn} redraw
+			var redraw = function(){
+				$games.each(function(){
+					$(this).data('game').redraw();
+				});
+				for (var i=0; i<dots.length; i++) dots[i].draw(true);
+			};
+
+			// initialize map
+			function initialize(){
+
+				// init map
+				createMap();
+
+				// create games
+				$games.each(function(gameIndex){
+					// blocks and vars
+					var $game = $(this),
+					    $gameItems = $(this).find('.js-map__item'),
+					    host = { x: parseFloat($game.attr('data-x'),10), y: parseFloat($game.attr('data-y'),10) },
+					    countries = [];
+					// {fn} activate items
+					var activate = function(){
+						$gameItems.each(function(itemIndex){
+							countries.push(createCountry(
+								itemIndex,
+								gameIndex,
+								host.x,
+								host.y,
+								$(this).attr('data-x'),
+								$(this).attr('data-y'),
+								parseInt($(this).attr('data-gold'),10),
+								parseInt($(this).attr('data-silver'),10),
+								parseInt($(this).attr('data-bronze'),10)
+							));
+						});
+					};
+					// {fn} redraw
+					var gameRedraw = function(){
+						for (var i=0; i<countries.length; i++) countries[i].draw(true);
+					};
+					// create host dot
+					createDot(host.x, host.y, true, 0, 0, 0, $game.attr('data-title'), $game.attr('data-year'));
+					// api
+					$game.data('game', { activate:activate, redraw:gameRedraw, countries:countries });
+				});
+				// create countries dots
+				$items.each(function(){
+					var coords = $(this).attr('data-x') + '|' + $(this).attr('data-y');
+					var data = {
+						gold: parseInt($(this).attr('data-gold'),10),
+						silver: parseInt($(this).attr('data-silver'),10),
+						bronze: parseInt($(this).attr('data-bronze'),10)
+					};
+					if (dotCoords.indexOf(coords)<0) {
+						dotCoords.push(coords);
+						dotDatas.push(data);
+					} else {
+						dotDatas[dotCoords.indexOf(coords)].gold += data.gold;
+						dotDatas[dotCoords.indexOf(coords)].silver += data.silver;
+						dotDatas[dotCoords.indexOf(coords)].bronze += data.bronze;
+					};
+				});
+				$.each(dotCoords, function(i){
+					var coords = dotCoords[i].split('|');
+					createDot(
+						parseFloat(coords[0],10),
+						parseFloat(coords[1],10),
+						false,
+						dotDatas[i].gold,
+						dotDatas[i].silver,
+						dotDatas[i].bronze
+					);
+				});
+				// {event} zoom changed
+				google.maps.event.addListener(map, 'zoom_changed', function(){
+					for (var i=0; i<dots.length; i++) dots[i].div.style.opacity = 0;
+					$games.each(function(){
+						var countries = $(this).data('game').countries;
+						for (var i=0; i<countries.length; i++) countries[i].div.style.opacity = 0;
+					});
+					zoom = map.getZoom();
+					if (zoom>3){
+						map.setOptions({ styles: mapStyles.bordered });
+					} else {
+						map.setOptions({ styles: mapStyles.simple });
+					}
+					redraw();
+				});
+				// api
+				$block.data('resultsMap', {
+					filter: function(newMode){
+						mode = newMode;
+						redraw();
+					},
+					activate: function(){
+						$games.each(function(){
+							$(this).data('game').activate();
+						});
+					}
+				});
+			};
+
+			initialize();
+
+		});
+
+		return this;
+
+	};
+
+})(jQuery);

@@ -1,0 +1,99 @@
+$(document).ready(function(){
+	var timer;
+	var timer_one;
+	var delay1 = 100;
+	var delay2 = 1050;
+	var delay3 = 1130;
+    var x=0;
+	var page1 = document.querySelector('.main');
+	var page2 = document.querySelector('.about');
+	var page3 = document.querySelector('.contact');
+	$('.letter').hover(function(){
+		$('.full-name').toggleClass('see');
+		$('.dot').toggleClass('see');
+	});
+	$('.about-name').click(function(){
+		if(x==2)
+		{
+			x=1;
+			$('.about').addClass('overlay-about');
+			$('.contact-name').removeClass('on');
+			$(this).addClass('on');
+			$('.contact').removeClass('overlay-contact');
+		}
+		else
+		{
+			x=1;
+		$(this).addClass('on');
+		$('.main').addClass('overlay-main');
+		$('.about').addClass('overlay-about');
+		}
+	});
+	$('.close-about').click(function(){
+		x=0;
+		$('.about-name').removeClass('on');
+		$('.main').removeClass('overlay-main');
+		$('.about').removeClass('overlay-about');
+	});
+	$('.contact-name').click(function(){
+		if(x==1)
+		{
+			x=2;
+			$('.about').removeClass('overlay-about');
+			$('.about-name').removeClass('on');
+			$(this).addClass('on');
+			$('.contact').addClass('overlay-contact');
+		}
+		else
+		{
+		x=2;
+		$(this).addClass('on');
+		$('.main').addClass('overlay-main');
+		$('.contact').addClass('overlay-contact');
+		}
+	});
+	$('.close-contact').click(function(){
+		x=0;
+		$('.contact-name').removeClass('on');
+		$('.main').removeClass('overlay-main');
+		$('.contact').removeClass('overlay-contact');
+	});
+	$('.about-mob').click(function(){
+		if(x==2)
+		{
+			x=1;
+			$('.about').addClass('overlay-about');
+			$('.contact').removeClass('overlay-contact');
+		}
+		else
+		{
+			x=1;
+		$('.main').addClass('overlay-main');
+		$('.about').addClass('overlay-about');
+		}
+	});
+	$('.close-about').click(function(){
+		x=0;
+		$('.main').removeClass('overlay-main');
+		$('.about').removeClass('overlay-about');
+	});
+	$('.contact-mob').click(function(){
+		if(x==1)
+		{
+			x=2;
+			$('.about').removeClass('overlay-about');
+			$('.contact').addClass('overlay-contact');
+		}
+		else
+		{
+		x=2;
+		$('.main').addClass('overlay-main');
+		$('.contact').addClass('overlay-contact');
+		}
+	});
+	$('.close-contact').click(function(){
+		x=0;
+		$('.main').removeClass('overlay-main');
+		$('.contact').removeClass('overlay-contact');
+	});
+});

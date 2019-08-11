@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <link href="stylesheets/bootstrap.min.css" rel="stylesheet">
+    <link href="stylesheets/app.css" rel="stylesheet">
+    <script src="javascripts/jquery-2.0.2.min.js"></script>
+    <script src="javascripts/wikiquote-api.js"></script>
+    <script src="javascripts/app.js">
+    </script>
+  </head>
+
+  <body>
+    <div class="container main-bg">
+      <div class="header text-center">
+        <h1>Caption Generator</h1>
+        <h4>Create a caption.<br /></h4>
+      </div>
+
+      <div class="row">
+       <div class="span5">
+          <form id="form1" class="search-form" method="post">
+            <input id="search-box1" class="search-box" type="text" />
+            <input type="submit" value="Search" class="button btn" />
+          </form>
+          <div class="quotes"></div>
+        </div>
+        <div class="span5">
+          <form id="form2" class="search-form" method="post">
+            <input id="search-box2" class="search-box" type="text" />
+            <input type="submit" value="Search" class="button btn" />
+          </form>
+          <div class="quotes"></div>
+        </div>
+      </div>
+
+      <div id="mashup">
+      </div>
+    </div>
+  </body>
+</html>
