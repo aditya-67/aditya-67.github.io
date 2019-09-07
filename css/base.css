@@ -871,6 +871,8 @@ textarea {
 	outline: none;
 	z-index: 100;
 	margin: 10px;
+	background: transparent;
+	text-decoration: underline;
 }
 
 /* Menu style */
