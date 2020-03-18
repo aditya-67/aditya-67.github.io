@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+   <title>Create Account</title>
+   <link rel="stylesheet" type="text/css" href="style_css.css">
+   <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+</head> 	
+<body>
+<div class="row">
+  <div class="column col-8 first">
+  <div class="row">
+  	<div class="column col-12">
+  		<text class="top-text">Step 1 of 3 <span><a href="#">.</a> . .</span> </text>
+  	</div>
+  </div>
+  <div class="row">
+    <div class="column col-12">
+    <div class="form col-6">
+      <h2>Let's set up your account</h2>
+      <text class="text-info">Already have an account? <a href="#">Sign in</a> </text>
+      <form class="validate">
+
+      <div class="material-textfield">
+      <input placeholder=" " type="text" id="text" required>
+      <label>Your name</label>
+    </div>
+    <div class="material-textfield">
+      <input placeholder=" " type="email" id="email" required>
+      <label>Email address</label>
+    </div>
+    <div class="material-textfield">
+      <select class="select-text" id="select" required>
+      <option value="">I would describe my user type as</option>
+            <option value="1">Developer</option>
+            <option value="2">Designer</option>
+          </select>
+      
+    </div>
+    <div class="material-textfield">
+        <input type="password" id="password" placeholder=" " required pattern=".{8,}">
+               
+        <label>
+          Password
+        </label>
+        <span class="fa fa-fw fa-eye field-icon" id="togglePassword"></span>
+        
+
+    </div>
+    <div class="help-message" style="display: block; visibility: visible;">Minimum 8 characters</div>
+
+    <div class="material-textfield">
+  <input type="submit" class="button" value="Next" id="submit" disabled>
+  </div>
+</form>
+<text class="text-info">By clicking the 'Next' button, you agree to creating a free account and to <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a> </text>
+</div>
+    </div>
+  </div>
+  </div>
+  <div class="column col-4 second">
+  <div class="text-inside">
+    <h1>Dummy Heading</h1>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    </div>
+  </div>
+</div>
+<script src="main.js"></script>	
+</body>
+
+</html>
+
