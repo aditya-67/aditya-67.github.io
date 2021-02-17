@@ -1522,7 +1522,7 @@ header {
 	width: 100%;
 	height: 100px;
 	border-bottom: 1px solid #E5E5E5;
-	background: #1338b1bd;
+	background: #1237B1;
 }
 header a {
 	border: none;
@@ -1548,7 +1548,7 @@ header .logo a {
 	padding: 0;
 	outline: 0;
 	border: none;
-	color: black;
+	color: white;
 	font-family: "montserrat-bold", sans-serif;
 	width: 100%;
 	height: 60px;

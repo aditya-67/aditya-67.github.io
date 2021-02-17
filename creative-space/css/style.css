@@ -642,7 +642,9 @@ h1, h2, h3, h4, h5,
 
 .main-content {
   float: left;
-  width: calc(100% - 250px); }
+  width: 100%; 
+  padding: 30px;
+}
   @media (max-width: 991.98px) {
     .main-content {
       width: 100%;
