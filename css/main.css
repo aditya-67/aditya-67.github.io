@@ -46,7 +46,7 @@ body {
  * ------------------------------------------------------------------- */
 a,
 a:visited {
-	color: #1237B1;
+	color: black;
 	border-bottom: 1px solid transparent;
 	-moz-transition: all 0.4s ease-in-out;
 	-o-transition: all 0.4s ease-in-out;
@@ -1147,7 +1147,7 @@ input::-moz-focus-inner {
 
 .bricks-wrapper .entry-text {
 	padding: 1.8rem 2.8rem 3.6rem;
-	background-color: white;
+	background-color: #ffffffe0;
 }
 
 .bricks-wrapper .entry-header .entry-title {
@@ -1181,7 +1181,7 @@ input::-moz-focus-inner {
 .bricks-wrapper .entry-excerpt {
 	font-size: 1.5rem;
 	line-height: 2.7rem;
-	color: #999999;
+	color: #505050;
 }
 
 
@@ -1522,7 +1522,7 @@ header {
 	width: 100%;
 	height: 100px;
 	border-bottom: 1px solid #E5E5E5;
-	background: #1237B1;
+	background: black;
 }
 header a {
 	border: none;
@@ -2342,6 +2342,18 @@ header .logo a {
 	width: 50%;
 }
 
+	#overlay {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		z-index: 1;
+		height: 100%;
+		color: rgba(209, 206, 209, 0.4);
+		text-align: center;
+		line-height: 100px;
+		box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+}
 .bricks-wrapper .featured-grid .entry-content {
 	width: 100%;
 	background: #151515;
@@ -2404,7 +2416,7 @@ header .logo a {
 	.contact-list
 	{
 		display: block;
-		text-align: center;
+		text-align: left;
 	}
 }
 @media only screen and (max-width:400px) {
@@ -2419,7 +2431,7 @@ header .logo a {
 	.contact-list
 	{
 		display: block;
-		text-align: center;
+		text-align: left;
 	}
 
 }
