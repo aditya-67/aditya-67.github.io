@@ -22,6 +22,7 @@ tags:
     description: This API is used by the FIPs and FIUs to submit notifications to the AA.
   - name: Monitoring
     description: Monitoring API Interface for checking availability of AA.
+host: aa-sandbox.setu.co
 schemes:
   - https
 securityDefinitions:
