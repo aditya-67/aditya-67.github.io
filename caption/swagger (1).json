@@ -2183,7 +2183,7 @@
   ],
   "servers": [
     {
-      "url": "https://uat.setu.co/api"
+      "url": "https://uat.setu.co/api/v2"
     }
   ],
   "components": {
