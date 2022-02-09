@@ -22,7 +22,7 @@
   "bodySize": 0,
   "postData": {
     "mimeType": "application/json",
-    "text": "{\"filters\":{},\"productInstanceIDOfReport\":\"string\"}"
+    "text": "{\"productInstanceIDOfReport\":\"string\"}"
   },
   "comment": "application/json"
 }
