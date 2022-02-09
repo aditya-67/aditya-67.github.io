@@ -1,1 +1,28 @@
-{"method":"POST","url":"https://uat.setu.co/api/v2/reports","headers":[{"name":"X-Setu-Product-Instance-ID","value":"SOME_STRING_VALUE"},{"name":"content-type","value":"application/json"}],"queryString":[],"httpVersion":"HTTP/1.1","cookies":[],"headersSize":0,"bodySize":0,"postData":{"mimeType":"application/json","text":"{"filters":{},"productInstanceIDOfReport":"string"}"},"comment":"application/json"}
+{
+  "method": "POST",
+  "url": "https://uat.setu.co/api/v2/reports",
+  "headers": [
+    {
+      "name": "X-Setu-Product-Instance-ID",
+      "value": "SOME_STRING_VALUE"
+    },
+    {
+      "name": "content-type",
+      "value": "application/json"
+    }
+  ],
+  "queryString": [
+    
+  ],
+  "httpVersion": "HTTP/1.1",
+  "cookies": [
+    
+  ],
+  "headersSize": 0,
+  "bodySize": 0,
+  "postData": {
+    "mimeType": "application/json",
+    "text": "{\"filters\":{},\"productInstanceIDOfReport\":\"string\"}"
+  },
+  "comment": "application/json"
+}
