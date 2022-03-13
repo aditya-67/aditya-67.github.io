@@ -539,9 +539,9 @@
   },
   "openapi": "3.0.0",
   "servers": [
-    { "url": "https://fastag-api.setu.co/api/mock/" },
-    { "url": "https://fastag-api.setu.co/api/uat/" },
-    { "url": "https://fastag-api.setu.co/api/prod/" }
+    { "url": "https://fastag-api.setu.co/api/mock" },
+    { "url": "https://fastag-api.setu.co/api/uat" },
+    { "url": "https://fastag-api.setu.co/api/prod" }
   ],
   "components": {
     "schemas": {
